@@ -84,8 +84,8 @@ def test_cp_ui_y_ejecucion_completa(mock_turtle_class, mock_screen_class):
     ejecutar_dibujo(cuadrado)
     
     # Validamos requerimientos de interfaz (UI)
-    mock_screen_instance.title.assert_called_with("Visualizador de Formas Geométricas - POO")
-    mock_screen_instance.bgcolor.assert_called_with("#FAFAFA")
+    mock_screen_instance.title.assert_called_with("Dibujando Formas con POO")
+    mock_screen_instance.bgcolor.assert_called_with("white")
     mock_turtle_instance.speed.assert_called_with(3)
     mock_turtle_instance.pensize.assert_called_with(2)
     
