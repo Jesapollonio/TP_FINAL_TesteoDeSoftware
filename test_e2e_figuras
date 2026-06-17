@@ -1,0 +1,68 @@
+import sys
+import pytest
+from unittest.mock import patch, MagicMock
+
+# Importamos el módulo principal del software (asegúrate de que se llame figuras.py)
+import figuras
+
+
+# ==============================================================================
+# PRUEBA E2E: FLUJO COMPLETO DE USUARIO (CÍRCULO)
+# ==============================================================================
+@patch('builtins.input')
+@patch('builtins.print')
+@patch('turtle.Screen')
+@patch('turtle.Turtle')
+def test_e2e_flujo_completo_circulo(mock_turtle_class, mock_screen_class, mock_print, mock_input):
+    """
+    PRUEBA E2E: Simula a un usuario seleccionando un Círculo, ingresando un área,
+    calculando el radio por medio de POO y desplegando la ventana gráfica correctamente.
+    """
+    # 1. SIMULACIÓN DE ENTRADAS DEL USUARIO
+    # El usuario elige la opción "1" (Círculo) y define un área de "314.16"
+    mock_input.side_effect = ["1", "314.16"]
+    
+    # 2. CONFIGURACIÓN DE LOS COMPONENTES DE INTERFAZ SIMULADOS
+    mock_screen_instance = MagicMock()
+    mock_turtle_instance = MagicMock()
+    
+    mock_screen_class.return_value = mock_screen_instance
+    mock_turtle_class.return_value = mock_turtle_instance
+
+    # 3. EJECUCIÓN DEL PROGRAMA COMPLETO (Punto de entrada principal)
+    # Ejecutamos el bloque de código que corre cuando el usuario inicia el archivo
+    try:
+        # Simulamos el comportamiento del bloque `if __name__ == "__main__":`
+        opcion = mock_input()
+        if opcion == "1":
+            area = float(mock_input())
+            objeto_forma = figuras.Circulo(area)
+            
+        # Verificamos que se integró la lógica matemática y se creó el objeto correcto
+        assert objeto_forma is not None
+        assert pytest.approx(objeto_forma.radio, rel=1e-2) == 10.0
+        
+        # Se envía al motor gráfico (Extremo final del flujo)
+        figuras.ejecutar_dibujo(objeto_forma)
+        
+    except SystemExit:
+        # Evita que exitonclick() cierre el ejecutor de pruebas de pytest
+        pass
+
+    # 4. VERIFICACIONES DE EXTREMO A EXTREMO (ASSERTS)
+    
+    # A. Verificar que el usuario vio el menú en consola
+    mock_print.assert_any_call("      SISTEMA INTERACTIVO DE DIBUJO GEOMÉTRICO       ")
+    
+    # B. Verificar que la pantalla gráfica final se configuró con los requisitos de UI
+    mock_screen_instance.title.assert_called_with("Dibujando Formas con POO")
+    mock_screen_instance.bgcolor.assert_called_with("white")
+    
+    # C. Verificar que la tortuga realizó las acciones físicas de dibujo en base al radio calculado
+    mock_turtle_instance.penup.assert_called()
+    mock_turtle_instance.goto.assert_called_with(0, -objeto_forma.radio) # El centro compensado
+    mock_turtle_instance.pendown.assert_called()
+    mock_turtle_instance.circle.assert_called_with(objeto_forma.radio) # El trazo final del círculo
+    
+    # D. Verificar la persistencia: La ventana espera el clic del usuario para liberar memoria
+    mock_screen_instance.exitonclick.assert_called_once()
